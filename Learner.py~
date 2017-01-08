@@ -58,6 +58,28 @@ def inc_Q(s, a, alpha, inc):
     World.set_cell_score(s, a, Q[s][a])
 
 
+def decide_first_action(position, width, height):
+    (x, y) = position
+    
+    distance_to_top_or_bottom = min([abs(y - (height-1)),y+1])
+    distance_to_walls = min([abs(x - (width-1)), x+1])
+
+
+    if  distance_to_top_or_bottom < distance_to_walls:
+        if x < (width-1)/2: act = "left"
+        elif x > (width-1)/2: act = "right"
+        else: act, _ = max_Q(position)
+    elif distance_to_top_or_bottom > distance_to_walls:
+        if y < (height-1)/2: act = "up"
+        elif y > (height-1)/2: act = "down"
+        else: act, _ = max_Q(position)
+    else:
+        act, _ = max_Q(position)
+
+    return act
+
+
+
 def run():
     global discount
     time.sleep(1)
@@ -65,10 +87,14 @@ def run():
     t = 1
     
     #Maybe if the bot goes towards the nearest world border first, it will rule it out faster if it isn't a good direction
+    first_action = True
     while True:
         # Pick the right action
         s = World.player
         max_act, max_val = max_Q(s)
+        if first_action: 
+            max_act = decide_first_action(World.player, World.WORLD_WIDTH, World.WORLD_HEIGHT)
+            first_action = False
         (s, a, r, s2) = do_action(max_act)
 
         # Update Q
